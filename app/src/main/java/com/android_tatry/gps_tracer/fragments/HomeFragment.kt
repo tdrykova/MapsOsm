@@ -61,22 +61,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         registerPermissions()
         checkLocPermission()
-
-//        if (hasPermissions()){
-//            Log.d("MyLog", "yes")
-//        }else{
-//            Log.d("MyLog", "no")
-//            requestPermissions()
-//        }
-
-//        permission = AppPermissions()
-//        if (permission.isLocOk((activity as AppCompatActivity), Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            showToast("Allowed")
-//            initOsm()
-//        } else {
-//            permission.requestPermissions((activity as AppCompatActivity))
-//            showToast("Denied")
-//        }
     }
 
     private fun settingsOsm() {
@@ -148,32 +132,6 @@ class HomeFragment : Fragment() {
             )
         }
     }
-
-
-
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    private fun hasPermissions() =
-//        EasyPermissions.hasPermissions(
-//            activity as AppCompatActivity,
-//            ACCESS_FINE_LOCATION,
-//            ACCESS_BACKGROUND_LOCATION
-//        )
-//
-//    @RequiresApi(Build.VERSION_CODES.Q)
-//    private fun requestPermissions() {
-//        EasyPermissions.requestPermissions(
-//            (activity as AppCompatActivity),
-//            "OK",
-//            PERMISSION_CAMERA_REQUEST_CODE,
-//            ACCESS_FINE_LOCATION, ACCESS_BACKGROUND_LOCATION
-//        )
-//    }
-//
-//    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-//    }
-
 
     companion object {
         const val PERMISSION_CAMERA_REQUEST_CODE = 1

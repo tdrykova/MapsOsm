@@ -1,9 +1,12 @@
 package com.android_tatry.gps_tracer.utils
 
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.android_tatry.gps_tracer.R
+import java.security.Permission
 
 fun AppCompatActivity.openFragment(fragment: Fragment) {
     if (supportFragmentManager.fragments.isNotEmpty()) {
@@ -33,4 +36,24 @@ fun Fragment.showToast(text: String) {
 
 fun AppCompatActivity.showToast(text: String) {
     Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+}
+
+fun Fragment.checkPermission(permission: String): Boolean {
+    return when {
+        ContextCompat.checkSelfPermission(activity as AppCompatActivity, permission) ==
+                PackageManager.PERMISSION_GRANTED -> {
+                    true
+                }
+//        shouldShowRequestPermissionRationale(permission) -> {
+//            Toast.makeText(activity as AppCompatActivity, "We need permission", Toast.LENGTH_SHORT).show()
+//            return false
+//        }
+        else -> {
+            false
+        }
+    }
+//    return when (PackageManager.PERMISSION_GRANTED) {
+//        ContextCompat.checkSelfPermission(activity as AppCompatActivity, permission) -> true
+//        else -> false
+//    }
 }

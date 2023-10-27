@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.android_tatry.gps_tracer.databinding.ActivityMainBinding
 import com.android_tatry.gps_tracer.fragments.HomeFragment
+import com.android_tatry.gps_tracer.fragments.HomeFragment2
 import com.android_tatry.gps_tracer.fragments.SettingsFragment
 import com.android_tatry.gps_tracer.fragments.TracksFragment
 import com.android_tatry.gps_tracer.utils.openFragment

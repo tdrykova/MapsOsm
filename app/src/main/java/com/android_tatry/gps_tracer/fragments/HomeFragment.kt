@@ -1,51 +1,35 @@
 package com.android_tatry.gps_tracer.fragments
 
-import android.Manifest
-import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
-import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
-import com.android_tatry.gps_tracer.AppPermissions
 import com.android_tatry.gps_tracer.databinding.FragmentHomeBinding
-import com.android_tatry.gps_tracer.utils.checkPermission
+import com.android_tatry.gps_tracer.utils.addPermissionToRequestedList
+import com.android_tatry.gps_tracer.utils.checkPermissionGranted
 import com.android_tatry.gps_tracer.utils.showToast
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.vmadalin.easypermissions.EasyPermissions
-import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-import java.util.*
+
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var permission: AppPermissions
+    private lateinit var pLauncher2: ActivityResultLauncher<Array<String>>
+    private var isFineLocationPermissionGranted = false
+    private var isCoarseLocationPermissionGranted = false
+    private var isBackgroundLocationPermissionGranted = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,11 +40,11 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         registerPermissions()
-        checkLocPermission()
+        requestPermissions()
+        checkLocationEnabled()
     }
 
     private fun settingsOsm() {
@@ -84,57 +68,86 @@ class HomeFragment : Fragment() {
     }
 
     private fun registerPermissions() {
-        pLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) {
-            if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-                initOsm()
-            } else {
-                showToast("You can't see your current location")
+        pLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    isFineLocationPermissionGranted =
+                        permissions[android.Manifest.permission.ACCESS_FINE_LOCATION]
+                            ?: isFineLocationPermissionGranted
+                    isCoarseLocationPermissionGranted =
+                        permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION]
+                            ?: isCoarseLocationPermissionGranted
+                    isBackgroundLocationPermissionGranted =
+                        permissions[android.Manifest.permission.ACCESS_BACKGROUND_LOCATION]
+                            ?: isBackgroundLocationPermissionGranted
+                } else {
+                    isFineLocationPermissionGranted =
+                        permissions[android.Manifest.permission.ACCESS_FINE_LOCATION]
+                            ?: isFineLocationPermissionGranted
+                }
+
             }
-        }
     }
 
-    private fun checkLocPermission() {
-        // v >= 10
+    private fun requestPermissions() {
+        isFineLocationPermissionGranted = checkPermissionGranted(
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            checkPermissionAfter10()
-        } else {
-            checkPermissionBefore10()
-        }
-    }
+            isCoarseLocationPermissionGranted = checkPermissionGranted(
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun checkPermissionAfter10() {
-        if (checkPermission(Manifest.permission.ACCESS_FINE_LOCATION) &&
-            checkPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        ) {
-            initOsm()
-        } else {
-            pLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION) )
-            pLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            isBackgroundLocationPermissionGranted = checkPermissionGranted(
+                android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
             )
         }
+
+        val permissionRequestList = ArrayList<String>()
+
+        addPermissionToRequestedList(
+            isFineLocationPermissionGranted,
+            android.Manifest.permission.ACCESS_FINE_LOCATION, permissionRequestList
+        )
+        addPermissionToRequestedList(
+            isCoarseLocationPermissionGranted,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION, permissionRequestList
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            addPermissionToRequestedList(
+                isBackgroundLocationPermissionGranted,
+                android.Manifest.permission.ACCESS_BACKGROUND_LOCATION, permissionRequestList
+            )
+        }
+
+        if (permissionRequestList.isNotEmpty()) {
+            if (permissionRequestList.size == 1) {
+                pLauncher.launch(arrayOf(permissionRequestList[0]))
+            } else if (permissionRequestList.size > 1) {
+                pLauncher.launch(arrayOf(permissionRequestList[0]))
+                pLauncher2.launch(arrayOf(permissionRequestList[1]))
+            }
+        } else {
+            initOsm()
+            checkLocationEnabled()
+        }
+        Log.d("MyLog", "perm-s: $permissionRequestList")
     }
 
-    private fun checkPermissionBefore10() {
-        if (checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            initOsm()
+    private fun checkLocationEnabled() {
+        val locManager =
+            (activity as AppCompatActivity).getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val isEnabled = locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        if (!isEnabled) {
+            showToast("Gps blocked")
         } else {
-            pLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            )
+            showToast("Loc enabled")
         }
     }
 
     companion object {
-        const val PERMISSION_CAMERA_REQUEST_CODE = 1
         @JvmStatic
         fun newInstance() = HomeFragment()
     }

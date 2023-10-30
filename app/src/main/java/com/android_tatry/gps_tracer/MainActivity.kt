@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.android_tatry.gps_tracer.databinding.ActivityMainBinding
 import com.android_tatry.gps_tracer.fragments.HomeFragment
-import com.android_tatry.gps_tracer.fragments.HomeFragment2
 import com.android_tatry.gps_tracer.fragments.SettingsFragment
 import com.android_tatry.gps_tracer.fragments.TracksFragment
 import com.android_tatry.gps_tracer.utils.openFragment
@@ -22,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onBottomNavClick() {
         binding.bottomNav.setOnItemSelectedListener {
-            when(it.itemId) {
+            when (it.itemId) {
                 R.id.id_home -> openFragment(HomeFragment.newInstance())
                 R.id.id_tracks -> openFragment(TracksFragment.newInstance())
                 R.id.id_settings -> openFragment(SettingsFragment())

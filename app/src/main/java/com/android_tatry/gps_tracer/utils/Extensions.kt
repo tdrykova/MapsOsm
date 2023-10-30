@@ -1,5 +1,6 @@
 package com.android_tatry.gps_tracer.utils
 
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity

@@ -1,18 +1,24 @@
 package com.android_tatry.gps_tracer.fragments
 
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.android_tatry.gps_tracer.R
 import com.android_tatry.gps_tracer.databinding.FragmentHomeBinding
+import com.android_tatry.gps_tracer.utils.DialogManager
 import com.android_tatry.gps_tracer.utils.addPermissionToRequestedList
 import com.android_tatry.gps_tracer.utils.checkPermissionGranted
 import com.android_tatry.gps_tracer.utils.showToast
@@ -43,8 +49,13 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         registerPermissions()
-        requestPermissions()
+
         checkLocationEnabled()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requestPermissions()
     }
 
     private fun settingsOsm() {
@@ -131,7 +142,6 @@ class HomeFragment : Fragment() {
             }
         } else {
             initOsm()
-            checkLocationEnabled()
         }
         Log.d("MyLog", "perm-s: $permissionRequestList")
     }
@@ -140,12 +150,21 @@ class HomeFragment : Fragment() {
         val locManager =
             (activity as AppCompatActivity).getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val isEnabled = locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        Log.d("MyLog", "checkLocationEnabled: $isEnabled")
         if (!isEnabled) {
-            showToast("Gps blocked")
+            DialogManager.showYesNoDialog(activity as AppCompatActivity, R.string.dialog_title,
+            R.string.dialog_msg, myClickListener)
         } else {
             showToast("Loc enabled")
         }
     }
+
+    private val myClickListener =
+        DialogInterface.OnClickListener { dialog, which ->
+            dialog.dismiss()
+            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+
+        }
 
     companion object {
         @JvmStatic

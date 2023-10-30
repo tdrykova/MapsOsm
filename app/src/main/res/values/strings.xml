@@ -9,4 +9,6 @@
     <string name="tracks_color">Color</string>
     <string name="color_name">Tracks color</string>
     <string name="color_name_summary">Choose track color</string>
+    <string name="dialog_title">Gps is blocked</string>
+    <string name="dialog_msg">Do you want to turn on gps?</string>
 </resources>
